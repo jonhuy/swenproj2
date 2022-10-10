@@ -11,42 +11,10 @@ import java.io.FileReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("serial")
+
 public class GameOfThrones extends CardGame {
 
     enum GoTSuit { CHARACTER, DEFENCE, ATTACK, MAGIC }
-    public enum Suit {
-        SPADES(GoTSuit.DEFENCE),
-        HEARTS(GoTSuit.CHARACTER),
-        DIAMONDS(GoTSuit.MAGIC),
-        CLUBS(GoTSuit.ATTACK);
-        Suit(GoTSuit gotsuit) {
-            this.gotsuit = gotsuit;
-        }
-        private final GoTSuit gotsuit;
-
-        public boolean isDefence(){ return gotsuit == GoTSuit.DEFENCE; }
-
-        public boolean isAttack(){ return gotsuit == GoTSuit.ATTACK; }
-
-        public boolean isCharacter(){ return gotsuit == GoTSuit.CHARACTER; }
-
-        public boolean isMagic(){ return gotsuit == GoTSuit.MAGIC; }
-    }
-
-    public enum Rank {
-        // Reverse order of rank importance (see rankGreater() below)
-        // Order of cards is tied to card images
-        ACE(1), KING(10), QUEEN(10), JACK(10), TEN(10), NINE(9), EIGHT(8), SEVEN(7), SIX(6), FIVE(5), FOUR(4), THREE(3), TWO(2);
-        Rank(int rankValue) {
-            this.rankValue = rankValue;
-        }
-        private final int rankValue;
-        public int getRankValue() {
-            return rankValue;
-        }
-    }
-
     /*
     Canonical String representations of Suit, Rank, Card, and Hand
     */
@@ -69,46 +37,7 @@ public class GameOfThrones extends CardGame {
     static public int seed;
     static Random random;
 
-    // return random Card from Hand
-    public static Card randomCard(Hand hand) {
-        assert !hand.isEmpty() : " random card from empty hand.";
-        int x = random.nextInt(hand.getNumberOfCards());
-        return hand.get(x);
-    }
-
-    private void dealingOut(Hand[] hands, int nbPlayers, int nbCardsPerPlayer) {
-        Hand pack = deck.toHand(false);
-        assert pack.getNumberOfCards() == 52 : " Starting pack is not 52 cards.";
-        // Remove 4 Aces
-        List<Card> aceCards = pack.getCardsWithRank(Rank.ACE);
-        for (Card card : aceCards) {
-            card.removeFromHand(false);
-        }
-        assert pack.getNumberOfCards() == 48 : " Pack without aces is not 48 cards.";
-        // Give each player 3 heart cards
-        for (int i = 0; i < nbPlayers; i++) {
-            for (int j = 0; j < 3; j++) {
-                List<Card> heartCards = pack.getCardsWithSuit(Suit.HEARTS);
-                int x = random.nextInt(heartCards.size());
-                Card randomCard = heartCards.get(x);
-                randomCard.removeFromHand(false);
-                hands[i].insert(randomCard, false);
-            }
-        }
-        assert pack.getNumberOfCards() == 36 : " Pack without aces and hearts is not 36 cards.";
-        // Give each player 9 of the remaining cards
-        for (int i = 0; i < nbCardsPerPlayer; i++) {
-            for (int j = 0; j < nbPlayers; j++) {
-                assert !pack.isEmpty() : " Pack has prematurely run out of cards.";
-                Card dealt = randomCard(pack);
-                dealt.removeFromHand(false);
-                hands[j].insert(dealt, false);
-            }
-        }
-        for (int j = 0; j < nbPlayers; j++) {
-            assert hands[j].getNumberOfCards() == 12 : " Hand does not have twelve cards.";
-        }
-    }
+    private Dealer dealer = new Dealer();
 
     private final String version = "1.0";
     public final int nbPlayers = 4;
@@ -197,7 +126,7 @@ public class GameOfThrones extends CardGame {
         for (int i = 0; i < nbPlayers; i++) {
             hands[i] = new Hand(deck);
         }
-        dealingOut(hands, nbPlayers, nbStartCards);
+        dealer.dealingOut(deck, hands, nbPlayers, nbStartCards, seed);
 
         for (int i = 0; i < nbPlayers; i++) {
             hands[i].sort(Hand.SortType.SUITPRIORITY, true);
@@ -252,50 +181,8 @@ public class GameOfThrones extends CardGame {
         updatePileRanks();
     }
 
-    private void pickACorrectSuit(int playerIndex, boolean isCharacter) {
-        Hand currentHand = hands[playerIndex];
-        List<Card> shortListCards = new ArrayList<>();
-        for (int i = 0; i < currentHand.getCardList().size(); i++) {
-            Card card = currentHand.getCardList().get(i);
-            Suit suit = (Suit) card.getSuit();
-            if (suit.isCharacter() == isCharacter) {
-                shortListCards.add(card);
-            }
-        }
-        if (shortListCards.isEmpty() || !isCharacter && random.nextInt(3) == 0) {
-            selected = Optional.empty();
-        } else {
-            selected = Optional.of(shortListCards.get(random.nextInt(shortListCards.size())));
-        }
-    }
-
     private void selectRandomPile() {
         selectedPileIndex = random.nextInt(2);
-    }
-
-    private void waitForCorrectSuit(int playerIndex, boolean isCharacter) {
-        if (hands[playerIndex].isEmpty()) {
-            selected = Optional.empty();
-        } else {
-            selected = null;
-            hands[playerIndex].setTouchEnabled(true);
-            do {
-                if (selected == null) {
-                    delay(100);
-                    continue;
-                }
-                Suit suit = selected.isPresent() ? (Suit) selected.get().getSuit() : null;
-                if (isCharacter && suit != null && suit.isCharacter() ||         // If we want character, can't pass and suit must be right
-                        !isCharacter && (suit == null || !suit.isCharacter())) { // If we don't want character, can pass or suit must not be character
-                    // if (suit != null && suit.isCharacter() == isCharacter) {
-                    break;
-                } else {
-                    selected = null;
-                    hands[playerIndex].setTouchEnabled(true);
-                }
-                delay(100);
-            } while (true);
-        }
     }
 
     private void waitForPileSelection() {
@@ -332,26 +219,24 @@ public class GameOfThrones extends CardGame {
         }
     }
 
-    private int getPlayerIndex(int index) {
-        return index % nbPlayers;
-    }
+    private Player player = new Player(seed, nbPlayers);
 
     private void executeAPlay() {
         resetPile();
 
-        nextStartingPlayer = getPlayerIndex(nextStartingPlayer);
+        nextStartingPlayer = player.getPlayerIndex(nextStartingPlayer);
         if (hands[nextStartingPlayer].getNumberOfCardsWithSuit(Suit.HEARTS) == 0)
-            nextStartingPlayer = getPlayerIndex(nextStartingPlayer + 1);
+            nextStartingPlayer = player.getPlayerIndex(nextStartingPlayer + 1);
         assert hands[nextStartingPlayer].getNumberOfCardsWithSuit(Suit.HEARTS) != 0 : " Starting player has no hearts.";
 
         // 1: play the first 2 hearts
         for (int i = 0; i < 2; i++) {
-            int playerIndex = getPlayerIndex(nextStartingPlayer + i);
+            int playerIndex = player.getPlayerIndex(nextStartingPlayer + i);
             setStatusText("Player " + playerIndex + " select a Heart card to play");
             if (humanPlayers[playerIndex]) {
-                waitForCorrectSuit(playerIndex, true);
+                selected = player.waitForCorrectSuit(playerIndex, true, hands);
             } else {
-                pickACorrectSuit(playerIndex, true);
+                selected = player.pickACorrectSuit(playerIndex, true, hands);
             }
 
             int pileIndex = playerIndex % 2;
@@ -367,12 +252,12 @@ public class GameOfThrones extends CardGame {
         int nextPlayer = nextStartingPlayer + 2;
 
         while(remainingTurns > 0) {
-            nextPlayer = getPlayerIndex(nextPlayer);
+            nextPlayer = player.getPlayerIndex(nextPlayer);
             setStatusText("Player" + nextPlayer + " select a non-Heart card to play.");
             if (humanPlayers[nextPlayer]) {
-                waitForCorrectSuit(nextPlayer, false);
+                selected = player.waitForCorrectSuit(nextPlayer, false, hands);
             } else {
-                pickACorrectSuit(nextPlayer, false);
+                selected = player.pickACorrectSuit(nextPlayer, false, hands);
             }
 
             if (selected.isPresent()) {
