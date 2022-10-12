@@ -23,6 +23,7 @@ public class Player {
     public int getPlayerIndex(int index) {
         return index % nbPlayers;
     }
+
     public Optional<Card> waitForCorrectSuit(int playerIndex, boolean isCharacter, Hand[] hands) {
         if (hands[playerIndex].isEmpty()) {
             selected = Optional.empty();
@@ -59,6 +60,8 @@ public class Player {
             }
         }
         if (shortListCards.isEmpty() || !isCharacter && random.nextInt(3) == 0) {
+            // what's the second argument used for?
+
             selected = Optional.empty();
         } else {
             selected = Optional.of(shortListCards.get(random.nextInt(shortListCards.size())));
