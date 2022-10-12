@@ -185,6 +185,15 @@ public class GameOfThrones extends CardGame {
         selectedPileIndex = random.nextInt(2);
     }
 
+    private void selectPile(Card card,int playerIndex){
+        if(((Suit) card.getSuit()).isAttack() || ((Suit) card.getSuit()).isDefence()){
+            selectedPileIndex = playerIndex % 2;
+        }
+        else{
+            selectedPileIndex = (playerIndex % 2 + 1) % 2;
+        }
+    }
+
     private void waitForPileSelection() {
         selectedPileIndex = NON_SELECTION_VALUE;
         for (Hand pile : piles) {
@@ -265,7 +274,9 @@ public class GameOfThrones extends CardGame {
                 if (humanPlayers[nextPlayer]) {
                     waitForPileSelection();
                 } else {
-                    selectRandomPile();
+                    //selectRandomPile();
+                    selectPile(selected.get(),player.getPlayerIndex(nextPlayer));
+
                 }
                 System.out.println("Player " + nextPlayer + " plays " + canonical(selected.get()) + " on pile " + selectedPileIndex);
                 selected.get().setVerso(false);
