@@ -153,8 +153,8 @@ public class GameOfThrones extends CardGame {
     Font bigFont = new Font("Arial", Font.BOLD, 36);
     Font smallFont = new Font("Arial", Font.PLAIN, 10);
 
-    // boolean[] humanPlayers = { true, false, false, false};
-    boolean[] humanPlayers = { false, false, false, false};
+    boolean[] humanPlayers = { true, false, false, false};
+    //boolean[] humanPlayers = { false, false, false, false};
 
 
     private void initScore() {
@@ -208,6 +208,8 @@ public class GameOfThrones extends CardGame {
             // Set up human player for interaction
             currentHand.addCardListener(new CardAdapter() {
                 public void leftDoubleClicked(Card card) {
+                    System.out.println("this card was picked");
+                    System.out.println(card);
                     selected = Optional.of(card);
                     currentHand.setTouchEnabled(false);
                 }
@@ -252,22 +254,7 @@ public class GameOfThrones extends CardGame {
         updatePileRanks();
     }
 
-    private void pickACorrectSuit(int playerIndex, boolean isCharacter) {
-        Hand currentHand = hands[playerIndex];
-        List<Card> shortListCards = new ArrayList<>();
-        for (int i = 0; i < currentHand.getCardList().size(); i++) {
-            Card card = currentHand.getCardList().get(i);
-            Suit suit = (Suit) card.getSuit();
-            if (suit.isCharacter() == isCharacter) {
-                shortListCards.add(card);
-            }
-        }
-        if (shortListCards.isEmpty() || !isCharacter && random.nextInt(3) == 0) {
-            selected = Optional.empty();
-        } else {
-            selected = Optional.of(shortListCards.get(random.nextInt(shortListCards.size())));
-        }
-    }
+
 
     private void selectRandomPile() {
         selectedPileIndex = random.nextInt(2);
@@ -280,6 +267,7 @@ public class GameOfThrones extends CardGame {
             selected = null;
             hands[playerIndex].setTouchEnabled(true);
             do {
+                System.out.println("inside do loop");
                 if (selected == null) {
                     delay(100);
                     continue;
@@ -288,12 +276,15 @@ public class GameOfThrones extends CardGame {
                 if (isCharacter && suit != null && suit.isCharacter() ||         // If we want character, can't pass and suit must be right
                         !isCharacter && (suit == null || !suit.isCharacter())) { // If we don't want character, can pass or suit must not be character
                     // if (suit != null && suit.isCharacter() == isCharacter) {
+                    System.out.println("inside inside if");
+                    System.out.println(selected);
                     break;
                 } else {
                     selected = null;
                     hands[playerIndex].setTouchEnabled(true);
                 }
                 delay(100);
+                System.out.println("finish do loop");
             } while (true);
         }
     }
@@ -335,7 +326,7 @@ public class GameOfThrones extends CardGame {
     private int getPlayerIndex(int index) {
         return index % nbPlayers;
     }
-
+    private Player player = new Player();
     private void executeAPlay() {
         resetPile();
 
@@ -350,8 +341,11 @@ public class GameOfThrones extends CardGame {
             setStatusText("Player " + playerIndex + " select a Heart card to play");
             if (humanPlayers[playerIndex]) {
                 waitForCorrectSuit(playerIndex, true);
+                //player.waitForCorrectSuit(playerIndex, true,hands,selected );
+                //System.out.println(selected);
             } else {
-                pickACorrectSuit(playerIndex, true);
+                //pickACorrectSuit(playerIndex, true);
+                selected = player.pickACorrectSuit(playerIndex, true, hands);
             }
 
             int pileIndex = playerIndex % 2;
@@ -371,8 +365,13 @@ public class GameOfThrones extends CardGame {
             setStatusText("Player" + nextPlayer + " select a non-Heart card to play.");
             if (humanPlayers[nextPlayer]) {
                 waitForCorrectSuit(nextPlayer, false);
+
+                //selected = player.waitForCorrectSuit(nextPlayer, false, hands);
+                //System.out.println(selected);
             } else {
-                pickACorrectSuit(nextPlayer, false);
+                //pickACorrectSuit(nextPlayer, false);
+                selected = player.pickACorrectSuit(nextPlayer, false, hands);
+                System.out.println(selected);
             }
 
             if (selected.isPresent()) {
