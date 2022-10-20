@@ -1,14 +1,12 @@
 package thrones.game;
 
 import ch.aplu.jcardgame.Card;
-import ch.aplu.jcardgame.Hand;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-public class SimpleStrategy {
-    static Random random;
+public class SimpleAI {
+    Random random = GameOfThrones.random;
     Card card ;
 
     Optional<Card> selectACard(List<Card> shortListCards, boolean isCharacter){
@@ -16,7 +14,7 @@ public class SimpleStrategy {
         Card maxCard = null;
         if(isCharacter){
             for(int i = 0; i< shortListCards.size();i++){
-                int curRank = ((Rank) shortListCards.get(i).getRank()).getRankValue();
+                int curRank = ((GameOfThrones.Rank) shortListCards.get(i).getRank()).getRankValue();
                 if(curRank > maxRank){
                     maxRank = curRank;
                     maxCard = shortListCards.get(i);
@@ -29,8 +27,8 @@ public class SimpleStrategy {
         }
     }
 
-    int selectPile(Card card,int playerIndex){
-        if(((Suit) card.getSuit()).isAttack() || ((Suit) card.getSuit()).isDefence()){
+    int selectPile(Optional<Card> card,int playerIndex){
+        if(((GameOfThrones.Suit) card.get().getSuit()).isAttack() || ((GameOfThrones.Suit) card.get().getSuit()).isDefence()){
             return playerIndex % 2;
         }
         else{
