@@ -396,10 +396,14 @@ public class GameOfThrones extends CardGame {
                     }
                     pileIndex = selectedPileIndex;
                 }
+                if (((Suit) selected.get().getSuit()).isMagic()){
+                    diamondCount++;
+                }
                 System.out.println("Player " + nextPlayer + " plays " + canonical(selected.get()) + " on pile " + pileIndex);
                 selected.get().setVerso(false);
                 selected.get().transfer(piles[pileIndex], true); // transfer to pile (includes graphic effect)
                 updatePileRanks();
+
             } else {
                 if (wantCharacterCard){
                     System.out.println("Pass returned on selection of character.");
@@ -513,7 +517,7 @@ public class GameOfThrones extends CardGame {
 
     public static void main(String[] args) {
         // System.out.println("Working Directory = " + System.getProperty("user.dir"));
-        // final Properties properties = new Properties();
+        //final Properties properties = new Properties();
         // properties.setProperty("watchingTime", "5000");
         /*
         if (args == null || args.length == 0) {
