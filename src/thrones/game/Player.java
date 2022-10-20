@@ -16,9 +16,8 @@ public class Player {
     static Random random = new Random(seed);;
 
 
-    public Optional<Card> pickACorrectSuit(int playerIndex, boolean isCharacter, Hand[] hands) {
+    public Optional<Card> pickACorrectSuit(int playerIndex, boolean isCharacter, Hand currentHand) {
         Optional<Card> selected;
-        Hand currentHand = hands[playerIndex];
         List<Card> shortListCards = new ArrayList<>();
         for (int i = 0; i < currentHand.getCardList().size(); i++) {
             Card card = currentHand.getCardList().get(i);
