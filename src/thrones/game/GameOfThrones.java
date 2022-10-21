@@ -15,23 +15,24 @@ import java.util.stream.Collectors;
 public class GameOfThrones extends CardGame {
 
     enum GoTSuit { CHARACTER, DEFENCE, ATTACK, MAGIC }
+
     public enum Suit {
-        SPADES(GoTSuit.DEFENCE),
-        HEARTS(GoTSuit.CHARACTER),
-        DIAMONDS(GoTSuit.MAGIC),
-        CLUBS(GoTSuit.ATTACK);
-        Suit(GoTSuit gotsuit) {
+        SPADES(GameOfThrones.GoTSuit.DEFENCE),
+        HEARTS(GameOfThrones.GoTSuit.CHARACTER),
+        DIAMONDS(GameOfThrones.GoTSuit.MAGIC),
+        CLUBS(GameOfThrones.GoTSuit.ATTACK);
+        Suit(GameOfThrones.GoTSuit gotsuit) {
             this.gotsuit = gotsuit;
         }
-        private final GoTSuit gotsuit;
+        private final GameOfThrones.GoTSuit gotsuit;
 
-        public boolean isDefence(){ return gotsuit == GoTSuit.DEFENCE; }
+        public boolean isDefence(){ return gotsuit == GameOfThrones.GoTSuit.DEFENCE; }
 
-        public boolean isAttack(){ return gotsuit == GoTSuit.ATTACK; }
+        public boolean isAttack(){ return gotsuit == GameOfThrones.GoTSuit.ATTACK; }
 
-        public boolean isCharacter(){ return gotsuit == GoTSuit.CHARACTER; }
+        public boolean isCharacter(){ return gotsuit == GameOfThrones.GoTSuit.CHARACTER; }
 
-        public boolean isMagic(){ return gotsuit == GoTSuit.MAGIC; }
+        public boolean isMagic(){ return gotsuit == GameOfThrones.GoTSuit.MAGIC; }
     }
 
     public enum Rank {
@@ -305,8 +306,28 @@ public class GameOfThrones extends CardGame {
 
     private int[] calculatePileRanks(int pileIndex) {
         Hand currentPile = piles[pileIndex];
-        int i = currentPile.isEmpty() ? 0 : ((Rank) currentPile.get(0).getRank()).getRankValue();
-        return new int[] { i, i };
+
+        int attackPower = 0;
+        int defencePower = 0;
+        int baseLevel = 0;
+        int i = 1;
+        if(!currentPile.isEmpty()){
+            baseLevel = ((Rank) currentPile.get(0).getRank()).getRankValue();
+            attackPower = baseLevel;
+            defencePower = baseLevel;
+            for (; i < currentPile.getNumberOfCards(); i++) {
+                GameOfThrones.Suit suit = (GameOfThrones.Suit) currentPile.get(i).getSuit();
+                if (suit.isDefence()) {
+                    defencePower += ((Rank) currentPile.get(i).getRank()).getRankValue();
+                } else if (suit.isAttack()) {
+                    attackPower += ((Rank) currentPile.get(i).getRank()).getRankValue();
+                } else if (suit.isMagic()) {
+                    attackPower -= ((Rank) currentPile.get(i).getRank()).getRankValue();
+                    defencePower -= ((Rank) currentPile.get(i).getRank()).getRankValue();
+                }
+            }
+        }
+        return new int[] { attackPower, defencePower };
     }
 
     private void updatePileRankState(int pileIndex, int attackRank, int defenceRank) {
@@ -328,7 +349,7 @@ public class GameOfThrones extends CardGame {
         return index % nbPlayers;
     }
     private Player player = new Player();
-
+    private int diamondCount=0;
     private void executeAPlay() {
         resetPile();
         nextStartingPlayer = getPlayerIndex(nextStartingPlayer);
@@ -484,7 +505,7 @@ public class GameOfThrones extends CardGame {
         if (humanPlayers[playerNo]) {
             waitForCorrectSuit(playerNo, characterCard);
         } else {
-            player.pickACorrectSuit(playerNo, characterCard, hands[playerNo]);
+            selected=player.pickACorrectSuit(playerNo, characterCard, hands[playerNo]);
         }
     }
 
