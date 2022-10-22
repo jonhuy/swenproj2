@@ -143,7 +143,7 @@ public class GameOfThrones extends CardGame {
 
     private Actor[] pileTextActors = { null, null };
     private Actor[] scoreActors = {null, null, null, null};
-    private final int watchingTime = 5000;
+    public static int watchingTime ;
     private Hand[] hands;
     private Hand[] piles;
     private final String[] playerTeams = { "[Players 0 & 2]", "[Players 1 & 3]"};
@@ -537,24 +537,41 @@ public class GameOfThrones extends CardGame {
     }
 
     public static void main(String[] args) {
-        // System.out.println("Working Directory = " + System.getProperty("user.dir"));
-        //final Properties properties = new Properties();
-        // properties.setProperty("watchingTime", "5000");
-        /*
+        System.out.println("Working Directory = " + System.getProperty("user.dir"));
+        final Properties properties;
+        //properties.setProperty("watchingTime", "5000");
+
         if (args == null || args.length == 0) {
-            //  properties = PropertiesLoader.loadPropertiesFile("cribbage.properties");
+            properties = PropertiesLoader.loadPropertiesFile("cribbage.properties");
         } else {
-            //  properties = PropertiesLoader.loadPropertiesFile(args[0]);
+            properties = PropertiesLoader.loadPropertiesFile(args[0]);
         }
 
         String seedProp = properties.getProperty("seed");  //Seed property
         if (seedProp != null) { // Use property seed
-			  seed = Integer.parseInt(seedProp);
+			  GameOfThrones.seed = Integer.parseInt(seedProp);
         } else { // and no property
-			  seed = new Random().nextInt(); // so randomise
+			  GameOfThrones.seed = 130006; // so randomise
         }
-        */
-        GameOfThrones.seed = 130006;
+
+        String timeProp = properties.getProperty("watchingTime");  //watchingTime property
+        if (timeProp != null) { // Use property watchingTime
+            watchingTime = Integer.parseInt(timeProp);
+        } else { // and no property
+            watchingTime = 5000; // so randomise
+        }
+
+        String[] playerTypes = new String[5];
+        for (int i=0; i<4; i++){
+            String playerKey = "players." + i;
+            String playersProp = properties.getProperty(playerKey);
+            if (playersProp != null){
+                playerTypes[i] = playersProp;
+            } else {
+                playerTypes[i] = "random";
+            }
+        }
+
         System.out.println("Seed = " + seed);
         GameOfThrones.random = new Random(seed);
         new GameOfThrones();
