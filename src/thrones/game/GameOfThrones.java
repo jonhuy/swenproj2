@@ -1,5 +1,6 @@
 package thrones.game;
 
+
 // Oh_Heaven.java
 
 import ch.aplu.jcardgame.*;
@@ -7,9 +8,9 @@ import ch.aplu.jgamegrid.*;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.io.FileReader;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 @SuppressWarnings("serial")
 public class GameOfThrones extends CardGame {
@@ -114,8 +115,8 @@ public class GameOfThrones extends CardGame {
     private final String version = "1.0";
     public final int nbPlayers = 4;
     public final int nbStartCards = 9;
-	public final int nbPlays = 6;
-	public final int nbRounds = 3;
+    public final int nbPlays = 6;
+    public final int nbRounds = 3;
     private final int handWidth = 400;
     private final int pileWidth = 40;
     private Deck deck = new Deck(Suit.values(), Rank.values(), "cover");
@@ -146,6 +147,7 @@ public class GameOfThrones extends CardGame {
     public static int watchingTime ;
     private Hand[] hands;
     private Hand[] piles;
+    private List<Optional<Card>> playedDiamonds = new ArrayList<>();
     private final String[] playerTeams = { "[Players 0 & 2]", "[Players 1 & 3]"};
     private int nextStartingPlayer = random.nextInt(nbPlayers);
 
@@ -154,13 +156,12 @@ public class GameOfThrones extends CardGame {
     Font bigFont = new Font("Arial", Font.BOLD, 36);
     Font smallFont = new Font("Arial", Font.PLAIN, 10);
 
-    boolean[] humanPlayers = { true, false, false, false};
-    //boolean[] humanPlayers = { false, false, false, false};
+
 
 
     private void initScore() {
         for (int i = 0; i < nbPlayers; i++) {
-             scores[i] = 0;
+            scores[i] = 0;
             String text = "P" + i + "-0";
             scoreActors[i] = new TextActor(text, Color.WHITE, bgColor, bigFont);
             addActor(scoreActors[i], scoreLocations[i]);
@@ -194,6 +195,8 @@ public class GameOfThrones extends CardGame {
     private final int ATTACK_RANK_INDEX = 0;
     private final int DEFENCE_RANK_INDEX = 1;
     private final int PILES_SIZE = 2;
+    private static String[] playerTypes = new String[5];
+
     private void setupGame() {
         hands = new Hand[nbPlayers];
         for (int i = 0; i < nbPlayers; i++) {
@@ -291,7 +294,7 @@ public class GameOfThrones extends CardGame {
         }
     }
 
-    private void waitForPileSelection() {
+    private int waitForPileSelection() {
         selectedPileIndex = NON_SELECTION_VALUE;
         for (Hand pile : piles) {
             pile.setTouchEnabled(true);
@@ -302,6 +305,7 @@ public class GameOfThrones extends CardGame {
         for (Hand pile : piles) {
             pile.setTouchEnabled(false);
         }
+        return selectedPileIndex;
     }
 
     private int[] calculatePileRanks(int pileIndex) {
@@ -345,11 +349,14 @@ public class GameOfThrones extends CardGame {
         }
     }
 
+    private boolean isSelectedCharacterCard(Optional<Card> selected){
+        return (((Suit)selected.get().getSuit()).isCharacter() || selected.isEmpty());
+    }
+
     private int getPlayerIndex(int index) {
         return index % nbPlayers;
     }
     private Player player = new Player();
-    private int diamondCount=0;
     private void executeAPlay() {
         resetPile();
         nextStartingPlayer = getPlayerIndex(nextStartingPlayer);
@@ -362,7 +369,9 @@ public class GameOfThrones extends CardGame {
             nextPlayer = getPlayerIndex(nextPlayer);
             int pileIndex = 0;
             boolean wantCharacterCard = false;
-            // 1: play the first 2 hearts
+
+        // 1: play the first 2 hearts
+
             if (i == 0 || i == 1){
                 setStatusText("Player " + nextPlayer + " select a Heart card to play");
                 wantCharacterCard = true;
@@ -370,56 +379,84 @@ public class GameOfThrones extends CardGame {
                 // 2: play the remaining turns
             } else{
                 setStatusText("Player" + nextPlayer + " select a non-Heart card to play.");
+
             }
+
             boolean RightCard = false;
-            while (!RightCard){
-                try{
-                    selectSuit(nextPlayer, wantCharacterCard);
-                    if (selected.isPresent()){
-                        Boolean isCharacterCard = isSelectedCharacterCard();
-                        if (isCharacterCard != wantCharacterCard){
-                            if (wantCharacterCard){
-                                throw new BrokeRuleException("Selected a non-Heart card to play.");
-                            } else {
-                                throw new BrokeRuleException("Selected a Heart card to play.");
-                            }
-                        } else {
-                            RightCard = true;
-                        }
-                    }
-                } catch (BrokeRuleException exception){
-                    setStatusText(exception.getMessage());
+            if(playerTypes[nextPlayer].equals("human")){
+                waitForCorrectSuit(nextPlayer,wantCharacterCard);
+            }
+            else{
+                selected = player.pickACorrectSuit(nextPlayer, wantCharacterCard, hands[nextPlayer],playerTypes[nextPlayer],piles,10 - i,playedDiamonds);
+            }
+
+            if(piles[pileIndex].getLast() != null && selected.isPresent()){
+                Suit lastCardSuit = (Suit) piles[pileIndex].getLast().getSuit();
+                if(lastCardSuit.isCharacter() && ((Suit) selected.get().getSuit()).isMagic()){
+                    selected = Optional.empty();
                 }
             }
+//            while (!RightCard){
+//                try{
+//                    if (selected.isPresent()){
+//                        Boolean isCharacterCard = isSelectedCharacterCard(selected);
+//                        if (isCharacterCard != wantCharacterCard){
+//                            if (wantCharacterCard){
+//                                throw new BrokeRuleException("Selected a non-Heart card to play.");
+//                            } else {
+//                                throw new BrokeRuleException("Selected a Heart card to play.");
+//                            }
+//                        } else {
+//                            RightCard = true;
+//                        }
+//                    }
+//                } catch (BrokeRuleException exception){
+//                    setStatusText(exception.getMessage());
+//                }
+//            }
+
+
+
             // Pick pile for selected card
             if (selected.isPresent()){
                 if (!wantCharacterCard){
                     setStatusText("Selected: " + canonical(selected.get()) + ". Player" + nextPlayer + " select a pile to play the card.");
                     /* CHANGED START */
-                    boolean validPile = false;
+
+//                    boolean validPile = false;
+//                    pileIndex = player.selectPile(nextPlayer,selected,playerTypes[nextPlayer]);
                     /* TODO: if pile invalid try other pile and if other pile doesn't work, pass */
-                    while (!validPile){
-                        try {
-                            selectPile(nextPlayer);
-                            if (((Suit) selected.get().getSuit()).isMagic()){
-                                Suit lastCardSuit = (Suit) piles[selectedPileIndex].getLast().getSuit();
-                                if (lastCardSuit.isCharacter()){
-                                    throw new BrokeRuleException("You cannot play a Diamond card on a Heart card.");
-                                } else {
-                                    validPile = true;
-                                }
-                            } else {
-                                validPile = true;
-                            }
-                        } catch (BrokeRuleException exception){
-                            setStatusText(exception.getMessage());
-                        }
-                    }
-                    pileIndex = selectedPileIndex;
+//                    while (!validPile){
+//                        try {
+//                            if (((Suit) selected.get().getSuit()).isMagic()){
+//                                Suit lastCardSuit = (Suit) piles[pileIndex].getLast().getSuit();
+//                                if (lastCardSuit.isCharacter()){
+//                                    throw new BrokeRuleException("You cannot play a Diamond card on a Heart card.");
+//                                } else {
+//                                    validPile = true;
+//                                }
+//                            } else {
+//                                validPile = true;
+//                            }
+//                        } catch (BrokeRuleException exception){
+//                            setStatusText(exception.getMessage());
+//                        }
+//                    }
                 }
-                if (((Suit) selected.get().getSuit()).isMagic()){
-                    diamondCount++;
+                if (selected != null && ((Suit) selected.get().getSuit()).isMagic()){
+                    playedDiamonds.add(selected);
                 }
+
+                if (playerTypes[nextPlayer].equals("human") && ((Suit) selected.get().getSuit()).isCharacter() == false) {
+                    pileIndex = waitForPileSelection();
+                }
+                else if(playerTypes[nextPlayer].equals("human") && ((Suit) selected.get().getSuit()).isCharacter()){
+                    pileIndex = nextPlayer % 2;
+                }
+                else{
+                    pileIndex = player.selectPile(nextPlayer,selected,playerTypes[nextPlayer]);
+                }
+
                 System.out.println("Player " + nextPlayer + " plays " + canonical(selected.get()) + " on pile " + pileIndex);
                 selected.get().setVerso(false);
                 selected.get().transfer(piles[pileIndex], true); // transfer to pile (includes graphic effect)
@@ -447,7 +484,9 @@ public class GameOfThrones extends CardGame {
         String character0Result;
         String character1Result;
 
-        if (pileRanks[0][ATTACK_RANK_INDEX] > pileRanks[1][DEFENCE_RANK_INDEX]) {
+
+        if (pileRanks[0][ATTACK_RANK_INDEX] > pileRanks[1][DEFENCE_RANK_INDEX]){
+
             scores[0] += pile1CharacterRank.getRankValue();
             scores[2] += pile1CharacterRank.getRankValue();
             character0Result = "Character 0 attack on character 1 succeeded.";
@@ -489,25 +528,29 @@ public class GameOfThrones extends CardGame {
 
     /* Added a separate function to reduce bloating in the function */
     // LOOK HERE PLAYER TYPES
-    private void selectPile(int playerNo){
-        if (humanPlayers[playerNo]) {
-            waitForPileSelection();
-        } else {
-            selectRandomPile();
-        }
-    }
+
+//    private void selectPile(int playerNo){
+//        if (playerTypes[playerNo]) {
+//            waitForPileSelection();
+//        } else {
+//            selectRandomPile();
+//        }
+//    }
+
 
 
     /* CHANGED START */
     /* Added a separate function to reduce repeated code */
     // LOOK HERE PLAYER TYPES
-    private void selectSuit(int playerNo, boolean characterCard){
-        if (humanPlayers[playerNo]) {
-            waitForCorrectSuit(playerNo, characterCard);
-        } else {
-            selected=player.pickACorrectSuit(playerNo, characterCard, hands[playerNo]);
-        }
-    }
+
+//    private void selectSuit(int playerNo, boolean characterCard){
+//        if (playerTypes[playerNo].equals("human")) {
+//            waitForCorrectSuit(playerNo, characterCard);
+//        } else {
+//            selected=player.pickACorrectSuit(nextPlayer, wantCharacterCard, hands[nextPlayer],playerTypes[nextPlayer],piles,10 - i,playedDiamonds);
+//        }
+//    }
+
 
     public GameOfThrones() {
         super(700, 700, 30);
@@ -549,9 +592,10 @@ public class GameOfThrones extends CardGame {
 
         String seedProp = properties.getProperty("seed");  //Seed property
         if (seedProp != null) { // Use property seed
-			  GameOfThrones.seed = Integer.parseInt(seedProp);
+
+            GameOfThrones.seed = Integer.parseInt(seedProp);
         } else { // and no property
-			  GameOfThrones.seed = 130006; // so randomise
+            GameOfThrones.seed = 130006; // so randomise
         }
 
         String timeProp = properties.getProperty("watchingTime");  //watchingTime property
@@ -561,7 +605,7 @@ public class GameOfThrones extends CardGame {
             watchingTime = 5000; // so randomise
         }
 
-        String[] playerTypes = new String[5];
+
         for (int i=0; i<4; i++){
             String playerKey = "players." + i;
             String playersProp = properties.getProperty(playerKey);
@@ -571,6 +615,8 @@ public class GameOfThrones extends CardGame {
                 playerTypes[i] = "random";
             }
         }
+
+
 
         System.out.println("Seed = " + seed);
         GameOfThrones.random = new Random(seed);

@@ -16,8 +16,11 @@ public class Player {
     static Random random = new Random(seed);;
 
 
-    public Optional<Card> pickACorrectSuit(int playerIndex, boolean isCharacter, Hand currentHand) {
+
+    public Optional<Card> pickACorrectSuit(int playerIndex, boolean isCharacter, Hand currentHand, String playerType, Hand[] piles, int remainingTurn, List<Optional<Card>> diamondsPlayed) {
         Optional<Card> selected;
+        //Hand currentHand = hands[playerIndex];
+
         List<Card> shortListCards = new ArrayList<>();
         for (int i = 0; i < currentHand.getCardList().size(); i++) {
             Card card = currentHand.getCardList().get(i);
@@ -30,7 +33,26 @@ public class Player {
         if (shortListCards.isEmpty() || !isCharacter && random.nextInt(3) == 0){
             selected = Optional.empty();
         } else {
-            selected = Optional.of(shortListCards.get(random.nextInt(shortListCards.size())));
+//            selected = Optional.of(shortListCards.get(random.nextInt(shortListCards.size())));
+            if(playerType.equals("random")){
+                System.out.println("PROBLEM WITH RANDOM PLAYER");
+                RandomAI randomAI = new RandomAI();
+                selected = randomAI.selectACard(shortListCards,isCharacter);
+            }
+            else if(playerType.equals("simple")){
+                System.out.println("PROBLEM WITH SIMPLE PLAYER");
+                SimpleAI simpleAI = new SimpleAI();
+                selected = simpleAI.selectACard(shortListCards,isCharacter);
+            }
+            else{
+                System.out.println("PROBLEM WITH SMART PLAYER");
+                SmartAI smartAI = new SmartAI();
+                selected = smartAI.selectACard(shortListCards,  isCharacter, piles, remainingTurn, playerIndex,diamondsPlayed);
+            }
+            //selected = select based on players' type
+            //if pile == heart and selected == diamond : isPresent = false
+            //else : not null
+
         }
         System.out.println("in player class");
         System.out.println(selected);
@@ -70,6 +92,28 @@ public class Player {
                 System.out.println("finish do loop");
             } while (true);
         }
+    }
+
+    public int selectPile(int playerIndex,Optional<Card> card,String playerType){
+        int pileNum;
+        if(((GameOfThrones.Suit) card.get().getSuit()).isCharacter()){
+            pileNum = playerIndex % 2;
+        }
+        else{
+            if(playerType.equals("random")){
+                RandomAI randomAI = new RandomAI();
+                pileNum = randomAI.selectPile();
+            }
+            else if(playerType.equals("simple")){
+                SimpleAI simpleAI = new SimpleAI();
+                pileNum = simpleAI.selectPile(card,playerIndex);
+            }
+            else{
+                SmartAI smartAI = new SmartAI();
+                pileNum = smartAI.selectPile(card,playerIndex);
+            }
+        }
+        return pileNum;
     }
 
 }
