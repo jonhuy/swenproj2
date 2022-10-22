@@ -16,9 +16,11 @@ public class Player {
     static Random random = new Random(seed);;
 
 
+
     public Optional<Card> pickACorrectSuit(int playerIndex, boolean isCharacter, Hand currentHand, String playerType, Hand[] piles, int remainingTurn, List<Optional<Card>> diamondsPlayed) {
         Optional<Card> selected;
         //Hand currentHand = hands[playerIndex];
+
         List<Card> shortListCards = new ArrayList<>();
         for (int i = 0; i < currentHand.getCardList().size(); i++) {
             Card card = currentHand.getCardList().get(i);
@@ -50,6 +52,7 @@ public class Player {
             //selected = select based on players' type
             //if pile == heart and selected == diamond : isPresent = false
             //else : not null
+
         }
         System.out.println("in player class");
         System.out.println(selected);
@@ -112,4 +115,5 @@ public class Player {
         }
         return pileNum;
     }
+
 }

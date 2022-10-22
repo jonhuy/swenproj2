@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class GameOfThrones extends CardGame {
 
     enum GoTSuit { CHARACTER, DEFENCE, ATTACK, MAGIC }
+
     public enum Suit {
         SPADES(GameOfThrones.GoTSuit.DEFENCE),
         HEARTS(GameOfThrones.GoTSuit.CHARACTER),
@@ -157,6 +158,7 @@ public class GameOfThrones extends CardGame {
 
 
 
+
     private void initScore() {
         for (int i = 0; i < nbPlayers; i++) {
             scores[i] = 0;
@@ -194,6 +196,7 @@ public class GameOfThrones extends CardGame {
     private final int DEFENCE_RANK_INDEX = 1;
     private final int PILES_SIZE = 2;
     private static String[] playerTypes = new String[5];
+
     private void setupGame() {
         hands = new Hand[nbPlayers];
         for (int i = 0; i < nbPlayers; i++) {
@@ -354,10 +357,8 @@ public class GameOfThrones extends CardGame {
         return index % nbPlayers;
     }
     private Player player = new Player();
-
     private void executeAPlay() {
         resetPile();
-
         nextStartingPlayer = getPlayerIndex(nextStartingPlayer);
         if (hands[nextStartingPlayer].getNumberOfCardsWithSuit(Suit.HEARTS) == 0)
             nextStartingPlayer = getPlayerIndex(nextStartingPlayer + 1);
@@ -368,7 +369,9 @@ public class GameOfThrones extends CardGame {
             nextPlayer = getPlayerIndex(nextPlayer);
             int pileIndex = 0;
             boolean wantCharacterCard = false;
+
         // 1: play the first 2 hearts
+
             if (i == 0 || i == 1){
                 setStatusText("Player " + nextPlayer + " select a Heart card to play");
                 wantCharacterCard = true;
@@ -376,6 +379,7 @@ public class GameOfThrones extends CardGame {
                 // 2: play the remaining turns
             } else{
                 setStatusText("Player" + nextPlayer + " select a non-Heart card to play.");
+
             }
 
             boolean RightCard = false;
@@ -412,11 +416,13 @@ public class GameOfThrones extends CardGame {
 //            }
 
 
+
             // Pick pile for selected card
             if (selected.isPresent()){
                 if (!wantCharacterCard){
                     setStatusText("Selected: " + canonical(selected.get()) + ". Player" + nextPlayer + " select a pile to play the card.");
                     /* CHANGED START */
+
 //                    boolean validPile = false;
 //                    pileIndex = player.selectPile(nextPlayer,selected,playerTypes[nextPlayer]);
                     /* TODO: if pile invalid try other pile and if other pile doesn't work, pass */
@@ -478,7 +484,9 @@ public class GameOfThrones extends CardGame {
         String character0Result;
         String character1Result;
 
+
         if (pileRanks[0][ATTACK_RANK_INDEX] > pileRanks[1][DEFENCE_RANK_INDEX]){
+
             scores[0] += pile1CharacterRank.getRankValue();
             scores[2] += pile1CharacterRank.getRankValue();
             character0Result = "Character 0 attack on character 1 succeeded.";
@@ -520,6 +528,7 @@ public class GameOfThrones extends CardGame {
 
     /* Added a separate function to reduce bloating in the function */
     // LOOK HERE PLAYER TYPES
+
 //    private void selectPile(int playerNo){
 //        if (playerTypes[playerNo]) {
 //            waitForPileSelection();
@@ -529,9 +538,11 @@ public class GameOfThrones extends CardGame {
 //    }
 
 
+
     /* CHANGED START */
     /* Added a separate function to reduce repeated code */
     // LOOK HERE PLAYER TYPES
+
 //    private void selectSuit(int playerNo, boolean characterCard){
 //        if (playerTypes[playerNo].equals("human")) {
 //            waitForCorrectSuit(playerNo, characterCard);
@@ -539,6 +550,7 @@ public class GameOfThrones extends CardGame {
 //            selected=player.pickACorrectSuit(nextPlayer, wantCharacterCard, hands[nextPlayer],playerTypes[nextPlayer],piles,10 - i,playedDiamonds);
 //        }
 //    }
+
 
     public GameOfThrones() {
         super(700, 700, 30);
@@ -580,6 +592,7 @@ public class GameOfThrones extends CardGame {
 
         String seedProp = properties.getProperty("seed");  //Seed property
         if (seedProp != null) { // Use property seed
+
             GameOfThrones.seed = Integer.parseInt(seedProp);
         } else { // and no property
             GameOfThrones.seed = 130006; // so randomise
@@ -602,6 +615,7 @@ public class GameOfThrones extends CardGame {
                 playerTypes[i] = "random";
             }
         }
+
 
 
         System.out.println("Seed = " + seed);
