@@ -93,17 +93,22 @@ public class Player {
 
     public int selectPile(int playerIndex,Optional<Card> card,String playerType){
         int pileNum;
-        if(playerType.equals("random")){
-            RandomAI randomAI = new RandomAI();
-            pileNum = randomAI.selectPile();
-        }
-        else if(playerType.equals("simple")){
-            SimpleAI simpleAI = new SimpleAI();
-            pileNum = simpleAI.selectPile(card,playerIndex);
+        if(((GameOfThrones.Suit) card.get().getSuit()).isCharacter()){
+            pileNum = playerIndex % 2;
         }
         else{
-            SmartAI smartAI = new SmartAI();
-            pileNum = smartAI.selectPile(card,playerIndex);
+            if(playerType.equals("random")){
+                RandomAI randomAI = new RandomAI();
+                pileNum = randomAI.selectPile();
+            }
+            else if(playerType.equals("simple")){
+                SimpleAI simpleAI = new SimpleAI();
+                pileNum = simpleAI.selectPile(card,playerIndex);
+            }
+            else{
+                SmartAI smartAI = new SmartAI();
+                pileNum = smartAI.selectPile(card,playerIndex);
+            }
         }
         return pileNum;
     }

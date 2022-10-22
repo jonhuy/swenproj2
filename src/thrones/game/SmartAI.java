@@ -19,7 +19,7 @@ public class SmartAI {
         Optional<Card> selectACard(List<Card> shortListCards, boolean isCharacter, Hand[] piles, int remainingTurn, int playerIndex, List<Optional<Card>> diamondsPlayed){
         int maxRank = 0;
         Optional<Card> returnedCard = Optional.empty();
-        List<Card> availableCards = null;
+        List<Card> availableCards = new ArrayList<>();
         int diamondsInHand = getDiamondsNum(shortListCards);
         if(isCharacter){
             System.out.println("Case1");
@@ -78,7 +78,7 @@ public class SmartAI {
                 }
 
             }
-            if(availableCards != null){
+            if(availableCards.size() != 0){
                 returnedCard = Optional.ofNullable(availableCards.get(random.nextInt(availableCards.size())));
             }
         }
