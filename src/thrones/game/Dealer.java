@@ -14,14 +14,16 @@ public class Dealer {
     }
     static Random random;
     public void dealingOut(Deck deck,Hand[] hands, int nbPlayers, int nbCardsPerPlayer, int seed) {
-        random = new Random(seed);;
+        random = new Random(seed);
         Hand pack = deck.toHand(false);
         assert pack.getNumberOfCards() == 52 : " Starting pack is not 52 cards.";
         // Remove 4 Aces
         List<Card> aceCards = pack.getCardsWithRank(Rank.ACE);
         for (Card card : aceCards) {
+            System.out.println(card);
             card.removeFromHand(false);
         }
+        System.out.println(pack);
         assert pack.getNumberOfCards() == 48 : " Pack without aces is not 48 cards.";
         // Give each player 3 heart cards
         for (int i = 0; i < nbPlayers; i++) {

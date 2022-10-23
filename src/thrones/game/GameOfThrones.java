@@ -86,6 +86,7 @@ public class GameOfThrones extends CardGame {
         for (Card card : aceCards) {
             card.removeFromHand(false);
         }
+        System.out.println(pack);
         assert pack.getNumberOfCards() == 48 : " Pack without aces is not 48 cards.";
         // Give each player 3 heart cards
         for (int i = 0; i < nbPlayers; i++) {
@@ -196,13 +197,14 @@ public class GameOfThrones extends CardGame {
     private final int DEFENCE_RANK_INDEX = 1;
     private final int PILES_SIZE = 2;
     private static String[] playerTypes = new String[5];
-
+    private Dealer dealer = new Dealer();
     private void setupGame() {
         hands = new Hand[nbPlayers];
         for (int i = 0; i < nbPlayers; i++) {
             hands[i] = new Hand(deck);
         }
-        dealingOut(hands, nbPlayers, nbStartCards);
+        dealingOut( hands, nbPlayers, nbStartCards);
+        //dealer.dealingOut(deck, hands, nbPlayers, nbStartCards,seed);
 
         for (int i = 0; i < nbPlayers; i++) {
             hands[i].sort(Hand.SortType.SUITPRIORITY, true);
@@ -272,7 +274,7 @@ public class GameOfThrones extends CardGame {
             selected = null;
             hands[playerIndex].setTouchEnabled(true);
             do {
-                System.out.println("inside do loop");
+                //System.out.println("inside do loop");
                 if (selected == null) {
                     delay(100);
                     continue;
@@ -281,7 +283,6 @@ public class GameOfThrones extends CardGame {
                 if (isCharacter && suit != null && suit.isCharacter() ||         // If we want character, can't pass and suit must be right
                         !isCharacter && (suit == null || !suit.isCharacter())) { // If we don't want character, can pass or suit must not be character
                     // if (suit != null && suit.isCharacter() == isCharacter) {
-                    System.out.println("inside inside if");
                     System.out.println(selected);
                     break;
                 } else {
@@ -289,7 +290,6 @@ public class GameOfThrones extends CardGame {
                     hands[playerIndex].setTouchEnabled(true);
                 }
                 delay(100);
-                System.out.println("finish do loop");
             } while (true);
         }
     }
@@ -320,14 +320,37 @@ public class GameOfThrones extends CardGame {
             attackPower = baseLevel;
             defencePower = baseLevel;
             for (; i < currentPile.getNumberOfCards(); i++) {
-                GameOfThrones.Suit suit = (GameOfThrones.Suit) currentPile.get(i).getSuit();
+                Card previous = currentPile.get(i-1);
+                Card card =  currentPile.get(i);
+                GameOfThrones.Suit suit = (GameOfThrones.Suit) card.getSuit();
                 if (suit.isDefence()) {
-                    defencePower += ((Rank) currentPile.get(i).getRank()).getRankValue();
+                    if(card.getRank() == previous.getRank()){
+                        defencePower += 2*(((Rank) currentPile.get(i).getRank()).getRankValue());
+                    }else{
+                        defencePower += ((Rank) currentPile.get(i).getRank()).getRankValue();
+                    }
+
                 } else if (suit.isAttack()) {
-                    attackPower += ((Rank) currentPile.get(i).getRank()).getRankValue();
+                    if(card.getRank() == previous.getRank()){
+                        attackPower += 2*(((Rank) currentPile.get(i).getRank()).getRankValue());
+                    }else{
+                        attackPower += ((Rank) currentPile.get(i).getRank()).getRankValue();
+                    }
+
                 } else if (suit.isMagic()) {
-                    attackPower -= ((Rank) currentPile.get(i).getRank()).getRankValue();
-                    defencePower -= ((Rank) currentPile.get(i).getRank()).getRankValue();
+                    if(card.getRank() == previous.getRank()){
+                        attackPower -= 2*(((Rank) currentPile.get(i).getRank()).getRankValue());
+                        defencePower -= 2*(((Rank) currentPile.get(i).getRank()).getRankValue());
+                    }else {
+                        attackPower -= ((Rank) currentPile.get(i).getRank()).getRankValue();
+                        defencePower -= ((Rank) currentPile.get(i).getRank()).getRankValue();
+                    }
+                    if(attackPower < 0){
+                        attackPower = 0;
+                    }
+                    if(defencePower < 0){
+                        defencePower = 0;
+                    }
                 }
             }
         }
@@ -602,16 +625,16 @@ public class GameOfThrones extends CardGame {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
         final Properties properties;
         //properties.setProperty("watchingTime", "5000");
+        System.out.println(args.length);
 
         if (args == null || args.length == 0) {
-            properties = PropertiesLoader.loadPropertiesFile("cribbage.properties");
+            properties = PropertiesLoader.loadPropertiesFile("got.properties");
         } else {
             properties = PropertiesLoader.loadPropertiesFile(args[0]);
         }
-
+        System.out.println(properties);
         String seedProp = properties.getProperty("seed");  //Seed property
         if (seedProp != null) { // Use property seed
-
             GameOfThrones.seed = Integer.parseInt(seedProp);
         } else { // and no property
             GameOfThrones.seed = 130006; // so randomise
