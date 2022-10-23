@@ -15,13 +15,13 @@ public class Dealer {
     static Random random;
     public void dealingOut(Deck deck,Hand[] hands, int nbPlayers, int nbCardsPerPlayer, int seed) {
         random = new Random(seed);
-        System.out.println(seed);
+        //System.out.println(seed);
         Hand pack = deck.toHand(false);
         //System.out.println(pack.getCardsWithRank(GameOfThrones.Rank.ACE));
         assert pack.getNumberOfCards() == 52 : " Starting pack is not 52 cards.";
         // Remove 4 Aces
         List<Card> aceCards = pack.getCardsWithRank(Rank.ACE);
-        System.out.println(aceCards);
+        //System.out.println(aceCards);
         for (Card card : aceCards) {
             //System.out.println(card);
             card.removeFromHand(false);

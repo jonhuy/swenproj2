@@ -35,17 +35,17 @@ public class Player {
         } else {
 //            selected = Optional.of(shortListCards.get(random.nextInt(shortListCards.size())));
             if(playerType.equals("random")){
-                System.out.println("PROBLEM WITH RANDOM PLAYER");
+                //System.out.println("PROBLEM WITH RANDOM PLAYER");
                 RandomAI randomAI = new RandomAI();
                 selected = randomAI.selectACard(shortListCards,isCharacter);
             }
             else if(playerType.equals("simple")){
-                System.out.println("PROBLEM WITH SIMPLE PLAYER");
+                //System.out.println("PROBLEM WITH SIMPLE PLAYER");
                 SimpleAI simpleAI = new SimpleAI();
                 selected = simpleAI.selectACard(shortListCards,isCharacter);
             }
             else{
-                System.out.println("PROBLEM WITH SMART PLAYER");
+                //System.out.println("PROBLEM WITH SMART PLAYER");
                 SmartAI smartAI = new SmartAI();
                 selected = smartAI.selectACard(shortListCards,  isCharacter, piles, remainingTurn, playerIndex,diamondsPlayed);
             }
@@ -54,8 +54,8 @@ public class Player {
             //else : not null
 
         }
-        System.out.println("in player class");
-        System.out.println(selected);
+        //System.out.println("in player class");
+        //System.out.println(selected);
         return selected;
     }
 

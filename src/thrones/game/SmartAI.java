@@ -22,7 +22,7 @@ public class SmartAI {
         List<Card> availableCards = new ArrayList<>();
         int diamondsInHand = getDiamondsNum(shortListCards);
         if(isCharacter){
-            System.out.println("Case1");
+            //System.out.println("Case1");
             for(int i = 0; i< shortListCards.size();i++){
                 int curRank = ((Rank) shortListCards.get(i).getRank()).getRankValue();
                 if(curRank > maxRank){
@@ -32,7 +32,7 @@ public class SmartAI {
             }
         }
         else if(remainingTurn == 1){
-            System.out.println("Case2");
+            //System.out.println("Case2");
             // smart Strategy condition 1
             int[] pile0Rank = calculatePileRanks(piles[0]);
             int[] pile1Rank = calculatePileRanks(piles[1]);
@@ -64,7 +64,7 @@ public class SmartAI {
             }
         }
         else if(diamondsPlayed == null || diamondsPlayed.size() != (12 - diamondsInHand)){
-            System.out.println("Case3");
+            //System.out.println("Case3");
             for(int i = 0;i < shortListCards.size();i++){
                 if(diamondsPlayed == null){
                     availableCards = collectCards(shortListCards);
@@ -122,8 +122,9 @@ public class SmartAI {
     Optional<Card> isChangeResult(Hand oppoPile,List<Card> hand,Hand teamPile){
         Optional<Card> returnedCard =  Optional.empty();
         for(int i = 0; i < hand.size();i++){
-            if((hand.get(i).getSuit()) == Suit.DIAMONDS){
+            if((hand.get(i).getSuit()) == Suit.DIAMONDS && oppoPile.getCard(oppoPile.getNumberOfCards()) != null){
                 Card lastCard = oppoPile.getCard(oppoPile.getNumberOfCards());
+                //System.out.println(lastCard);
                 Suit lastSuit = (Suit) lastCard.getSuit();
                 int lastRank = ((Rank) lastCard.getRank()).getRankValue();
                 int[] teamPileRanks = calculatePileRanks(teamPile);

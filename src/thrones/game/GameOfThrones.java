@@ -424,10 +424,6 @@ public class GameOfThrones extends CardGame {
         return pileRanks;
     }
 
-    private Boolean isSelectedCharacterCard(){
-        return ((Suit) selected.get().getSuit()).isCharacter();
-    }
-
     /* Added a separate function to reduce bloating in the function */
     // LOOK HERE PLAYER TYPES
 
