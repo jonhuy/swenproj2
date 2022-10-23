@@ -383,22 +383,9 @@ public class GameOfThrones extends CardGame {
             }
 
             boolean RightCard = false;
-            if(playerTypes[nextPlayer].equals("human")){
-                waitForCorrectSuit(nextPlayer,wantCharacterCard);
-            }
-            else{
-                selected = player.pickACorrectSuit(nextPlayer, wantCharacterCard, hands[nextPlayer],playerTypes[nextPlayer],piles,10 - i,playedDiamonds);
-            }
-
-            if(piles[pileIndex].getLast() != null && selected.isPresent()){
-                Suit lastCardSuit = (Suit) piles[pileIndex].getLast().getSuit();
-                if(lastCardSuit.isCharacter() && ((Suit) selected.get().getSuit()).isMagic()){
-                    selected = Optional.empty();
-                }
-            }
-
             while (!RightCard){
                 try{
+                    selectSuit(nextPlayer,wantCharacterCard, remainingTurns - i);
                     if (selected.isPresent()){
                         Boolean isCharacterCard = isSelectedCharacterCard(selected);
                         if (isCharacterCard != wantCharacterCard){
@@ -411,7 +398,7 @@ public class GameOfThrones extends CardGame {
                             RightCard = true;
                         }
                     } else {
-                        RightCard = true
+                        RightCard = true;
                     }
                 } catch (BrokeRuleException exception){
                     setStatusText(exception.getMessage());
@@ -419,55 +406,30 @@ public class GameOfThrones extends CardGame {
             }
 
 
-
             // Pick pile for selected card
             if (selected.isPresent()){
                 if (!wantCharacterCard){
                     setStatusText("Selected: " + canonical(selected.get()) + ". Player" + nextPlayer + " select a pile to play the card.");
-                    boolean validPile = false;
+                    //boolean validPile = false;
                     boolean isSelectedMagic = ((Suit) selected.get().getSuit()).isMagic();
-                    int pileTries = 0;
-                    while (!validPile){
-                        try {
-                            if (pileTries == 0){
-                                selectPile(nextPlayer);
-                                if (isSelectedMagic){
-                                    Suit lastCardSuit = (Suit) piles[selectedPileIndex].getLast().getSuit();
-                                    if (lastCardSuit.isCharacter()){
-                                        throw new BrokeRuleException("You cannot play a Diamond card on a Heart card.");
-                                    } else {
-                                        validPile = true;
-                                    }
-                                } else {
-                                    validPile = true;
+                    //int pileTries = 0;
+                    try {
+                        selectPile(nextPlayer);
+                        if (isSelectedMagic){
+                            Suit lastCardSuit = (Suit) piles[selectedPileIndex].getLast().getSuit();
+                                if (lastCardSuit.isCharacter()){
+                                    throw new BrokeRuleException("You cannot play a Diamond card on a Heart card.");
                                 }
-                                pileTries ++;
-                            } else if (pileTries == 1){
-                                selectedPileIndex = 1 - selectedPileIndex;
-                                if (isSelectedMagic){
-                                    Suit lastCardSuit = (Suit) piles[selectedPileIndex].getLast().getSuit();
-                                    if (lastCardSuit.isCharacter()){
-                                        throw new BrokeRuleException("You cannot play a Diamond card on a Heart card.");
-                                    } else {
-                                        validPile = true;
-                                    }
-                                } else {
-                                    validPile = true;
-                                }
-                                pileTries ++;
-                            } else {
-                                /* If suit can't be placed on either pile, pass. */
-                                selected = null;
-                            }
-                        } catch (BrokeRuleException exception){
-                            setStatusText(exception.getMessage());
                         }
+                    } catch (BrokeRuleException exception){
+                        setStatusText(exception.getMessage());
+                        selected = Optional.empty();
                     }
                     pileIndex = selectedPileIndex;
                 }
                 if (selected.isPresent()){
                     if (((Suit) selected.get().getSuit()).isMagic()){
-                        diamondCount++;
+                        playedDiamonds.add(selected);
                     }
                     System.out.println("Player " + nextPlayer + " plays " + canonical(selected.get()) + " on pile " + pileIndex);
                     selected.get().setVerso(false);
@@ -543,13 +505,13 @@ public class GameOfThrones extends CardGame {
     /* Added a separate function to reduce bloating in the function */
     // LOOK HERE PLAYER TYPES
 
-//    private void selectPile(int playerNo){
-//        if (playerTypes[playerNo]) {
-//            waitForPileSelection();
-//        } else {
-//            selectRandomPile();
-//        }
-//    }
+    private void selectPile(int playerNo){
+        if (playerTypes[playerNo].equals("human")) {
+            waitForPileSelection();
+        } else {
+            selectedPileIndex = player.selectPile(playerNo, selected,playerTypes[playerNo]);
+        }
+    }
 
 
 
@@ -557,13 +519,14 @@ public class GameOfThrones extends CardGame {
     /* Added a separate function to reduce repeated code */
     // LOOK HERE PLAYER TYPES
 
-//    private void selectSuit(int playerNo, boolean characterCard){
-//        if (playerTypes[playerNo].equals("human")) {
-//            waitForCorrectSuit(playerNo, characterCard);
-//        } else {
-//            selected=player.pickACorrectSuit(nextPlayer, wantCharacterCard, hands[nextPlayer],playerTypes[nextPlayer],piles,10 - i,playedDiamonds);
-//        }
-//    }
+    private void selectSuit(int playerNo, boolean characterCard, int remainingTurns){
+        if(playerTypes[playerNo].equals("human")){
+            waitForCorrectSuit(playerNo,characterCard);
+        }
+        else{
+            selected = player.pickACorrectSuit(playerNo, characterCard, hands[playerNo],playerTypes[playerNo],piles,remainingTurns,playedDiamonds);
+        }
+    }
 
 
     public GameOfThrones() {
