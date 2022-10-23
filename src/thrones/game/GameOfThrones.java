@@ -370,7 +370,7 @@ public class GameOfThrones extends CardGame {
             int pileIndex = 0;
             boolean wantCharacterCard = false;
 
-        // 1: play the first 2 hearts
+            // 1: play the first 2 hearts
 
             if (i == 0 || i == 1){
                 setStatusText("Player " + nextPlayer + " select a Heart card to play");
@@ -411,7 +411,7 @@ public class GameOfThrones extends CardGame {
                             RightCard = true;
                         }
                     } else {
-                        RightCard = true
+                        RightCard = true;
                     }
                 } catch (BrokeRuleException exception){
                     setStatusText(exception.getMessage());
@@ -430,7 +430,7 @@ public class GameOfThrones extends CardGame {
                     while (!validPile){
                         try {
                             if (pileTries == 0){
-                                selectPile(nextPlayer);
+                                selectedPileIndex = player.selectPile(nextPlayer,selected,playerTypes[nextPlayer]);
                                 if (isSelectedMagic){
                                     Suit lastCardSuit = (Suit) piles[selectedPileIndex].getLast().getSuit();
                                     if (lastCardSuit.isCharacter()){
@@ -463,11 +463,16 @@ public class GameOfThrones extends CardGame {
                             setStatusText(exception.getMessage());
                         }
                     }
-                    pileIndex = selectedPileIndex;
                 }
                 if (selected.isPresent()){
-                    if (((Suit) selected.get().getSuit()).isMagic()){
-                        diamondCount++;
+                    if (playerTypes[nextPlayer].equals("human") && ((Suit) selected.get().getSuit()).isCharacter() == false) {
+                        pileIndex = waitForPileSelection();
+                    }
+                    else if(playerTypes[nextPlayer].equals("human") && ((Suit) selected.get().getSuit()).isCharacter()){
+                        pileIndex = nextPlayer % 2;
+                    }
+                    else{
+                        pileIndex = player.selectPile(nextPlayer,selected,playerTypes[nextPlayer]);
                     }
                     System.out.println("Player " + nextPlayer + " plays " + canonical(selected.get()) + " on pile " + pileIndex);
                     selected.get().setVerso(false);
@@ -630,7 +635,7 @@ public class GameOfThrones extends CardGame {
             }
         }
 
-
+        playerTypes = new String[]{"human","random","smart","simple"};
 
         System.out.println("Seed = " + seed);
         GameOfThrones.random = new Random(seed);
