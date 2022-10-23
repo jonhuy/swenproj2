@@ -592,7 +592,7 @@ public class GameOfThrones extends CardGame {
         //System.out.println(args.length);
 
         if (args == null || args.length == 0) {
-            properties = PropertiesLoader.loadPropertiesFile("got.properties");
+            properties = PropertiesLoader.loadPropertiesFile("original.properties");
         } else {
             properties = PropertiesLoader.loadPropertiesFile(args[0]);
         }
