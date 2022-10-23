@@ -396,24 +396,27 @@ public class GameOfThrones extends CardGame {
                     selected = Optional.empty();
                 }
             }
-//            while (!RightCard){
-//                try{
-//                    if (selected.isPresent()){
-//                        Boolean isCharacterCard = isSelectedCharacterCard(selected);
-//                        if (isCharacterCard != wantCharacterCard){
-//                            if (wantCharacterCard){
-//                                throw new BrokeRuleException("Selected a non-Heart card to play.");
-//                            } else {
-//                                throw new BrokeRuleException("Selected a Heart card to play.");
-//                            }
-//                        } else {
-//                            RightCard = true;
-//                        }
-//                    }
-//                } catch (BrokeRuleException exception){
-//                    setStatusText(exception.getMessage());
-//                }
-//            }
+
+            while (!RightCard){
+                try{
+                    if (selected.isPresent()){
+                        Boolean isCharacterCard = isSelectedCharacterCard(selected);
+                        if (isCharacterCard != wantCharacterCard){
+                            if (wantCharacterCard){
+                                throw new BrokeRuleException("Selected a non-Heart card to play.");
+                            } else {
+                                throw new BrokeRuleException("Selected a Heart card to play.");
+                            }
+                        } else {
+                            RightCard = true;
+                        }
+                    } else {
+                        RightCard = true
+                    }
+                } catch (BrokeRuleException exception){
+                    setStatusText(exception.getMessage());
+                }
+            }
 
 
 
@@ -421,48 +424,59 @@ public class GameOfThrones extends CardGame {
             if (selected.isPresent()){
                 if (!wantCharacterCard){
                     setStatusText("Selected: " + canonical(selected.get()) + ". Player" + nextPlayer + " select a pile to play the card.");
-                    /* CHANGED START */
+                    boolean validPile = false;
+                    boolean isSelectedMagic = ((Suit) selected.get().getSuit()).isMagic();
+                    int pileTries = 0;
+                    while (!validPile){
+                        try {
+                            if (pileTries == 0){
+                                selectPile(nextPlayer);
+                                if (isSelectedMagic){
+                                    Suit lastCardSuit = (Suit) piles[selectedPileIndex].getLast().getSuit();
+                                    if (lastCardSuit.isCharacter()){
+                                        throw new BrokeRuleException("You cannot play a Diamond card on a Heart card.");
+                                    } else {
+                                        validPile = true;
+                                    }
+                                } else {
+                                    validPile = true;
+                                }
+                                pileTries ++;
+                            } else if (pileTries == 1){
+                                selectedPileIndex = 1 - selectedPileIndex;
+                                if (isSelectedMagic){
+                                    Suit lastCardSuit = (Suit) piles[selectedPileIndex].getLast().getSuit();
+                                    if (lastCardSuit.isCharacter()){
+                                        throw new BrokeRuleException("You cannot play a Diamond card on a Heart card.");
+                                    } else {
+                                        validPile = true;
+                                    }
+                                } else {
+                                    validPile = true;
+                                }
+                                pileTries ++;
+                            } else {
+                                /* If suit can't be placed on either pile, pass. */
+                                selected = null;
+                            }
+                        } catch (BrokeRuleException exception){
+                            setStatusText(exception.getMessage());
+                        }
+                    }
+                    pileIndex = selectedPileIndex;
+                }
+                if (selected.isPresent()){
+                    if (((Suit) selected.get().getSuit()).isMagic()){
+                        diamondCount++;
+                    }
+                    System.out.println("Player " + nextPlayer + " plays " + canonical(selected.get()) + " on pile " + pileIndex);
+                    selected.get().setVerso(false);
+                    selected.get().transfer(piles[pileIndex], true); // transfer to pile (includes graphic effect)
+                    updatePileRanks();
+                }
+            }
 
-//                    boolean validPile = false;
-//                    pileIndex = player.selectPile(nextPlayer,selected,playerTypes[nextPlayer]);
-                    /* TODO: if pile invalid try other pile and if other pile doesn't work, pass */
-//                    while (!validPile){
-//                        try {
-//                            if (((Suit) selected.get().getSuit()).isMagic()){
-//                                Suit lastCardSuit = (Suit) piles[pileIndex].getLast().getSuit();
-//                                if (lastCardSuit.isCharacter()){
-//                                    throw new BrokeRuleException("You cannot play a Diamond card on a Heart card.");
-//                                } else {
-//                                    validPile = true;
-//                                }
-//                            } else {
-//                                validPile = true;
-//                            }
-//                        } catch (BrokeRuleException exception){
-//                            setStatusText(exception.getMessage());
-//                        }
-//                    }
-                }
-                if (selected != null && ((Suit) selected.get().getSuit()).isMagic()){
-                    playedDiamonds.add(selected);
-                }
-
-                if (playerTypes[nextPlayer].equals("human") && ((Suit) selected.get().getSuit()).isCharacter() == false) {
-                    pileIndex = waitForPileSelection();
-                }
-                else if(playerTypes[nextPlayer].equals("human") && ((Suit) selected.get().getSuit()).isCharacter()){
-                    pileIndex = nextPlayer % 2;
-                }
-                else{
-                    pileIndex = player.selectPile(nextPlayer,selected,playerTypes[nextPlayer]);
-                }
-
-                System.out.println("Player " + nextPlayer + " plays " + canonical(selected.get()) + " on pile " + pileIndex);
-                selected.get().setVerso(false);
-                selected.get().transfer(piles[pileIndex], true); // transfer to pile (includes graphic effect)
-                updatePileRanks();
-
-            } else {
+            if (!selected.isPresent()){
                 if (wantCharacterCard){
                     System.out.println("Pass returned on selection of character.");
                 } else{
