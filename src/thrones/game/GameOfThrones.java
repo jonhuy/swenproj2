@@ -359,6 +359,7 @@ public class GameOfThrones extends CardGame {
     private Player player = new Player();
     private void executeAPlay() {
         resetPile();
+        selected = Optional.empty();
         nextStartingPlayer = getPlayerIndex(nextStartingPlayer);
         if (hands[nextStartingPlayer].getNumberOfCardsWithSuit(Suit.HEARTS) == 0)
             nextStartingPlayer = getPlayerIndex(nextStartingPlayer + 1);
@@ -524,7 +525,12 @@ public class GameOfThrones extends CardGame {
             waitForCorrectSuit(playerNo,characterCard);
         }
         else{
-            selected = player.pickACorrectSuit(playerNo, characterCard, hands[playerNo],playerTypes[playerNo],piles,remainingTurns,playedDiamonds);
+            Optional<Card> tempSelected = player.pickACorrectSuit(playerNo, characterCard, hands[playerNo],playerTypes[playerNo],piles,remainingTurns,playedDiamonds);
+            if (tempSelected == selected){
+                selected = Optional.empty();
+            } else {
+                selected = tempSelected;
+            }
         }
     }
 
