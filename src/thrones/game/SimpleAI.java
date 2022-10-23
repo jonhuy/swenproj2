@@ -14,7 +14,7 @@ public class SimpleAI {
         Card maxCard = null;
         if(isCharacter){
             for(int i = 0; i< shortListCards.size();i++){
-                int curRank = ((GameOfThrones.Rank) shortListCards.get(i).getRank()).getRankValue();
+                int curRank = ((Rank) shortListCards.get(i).getRank()).getRankValue();
                 if(curRank > maxRank){
                     maxRank = curRank;
                     maxCard = shortListCards.get(i);
@@ -28,7 +28,7 @@ public class SimpleAI {
     }
 
     int selectPile(Optional<Card> card,int playerIndex){
-        if(((GameOfThrones.Suit) card.get().getSuit()).isAttack() || ((GameOfThrones.Suit) card.get().getSuit()).isDefence()){
+        if(((Suit) card.get().getSuit()).isAttack() || ((Suit) card.get().getSuit()).isDefence()){
             return playerIndex % 2;
         }
         else{

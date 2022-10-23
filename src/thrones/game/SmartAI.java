@@ -24,7 +24,7 @@ public class SmartAI {
         if(isCharacter){
             System.out.println("Case1");
             for(int i = 0; i< shortListCards.size();i++){
-                int curRank = ((GameOfThrones.Rank) shortListCards.get(i).getRank()).getRankValue();
+                int curRank = ((Rank) shortListCards.get(i).getRank()).getRankValue();
                 if(curRank > maxRank){
                     maxRank = curRank;
                     returnedCard = Optional.ofNullable(shortListCards.get(i));
@@ -71,7 +71,7 @@ public class SmartAI {
                 }
                 else{
                     for(int j = 0; j < diamondsPlayed.size();j++){
-                        if (((GameOfThrones.Rank)shortListCards.get(i).getRank()).getRankValue() != ((GameOfThrones.Rank) diamondsPlayed.get(j).get().getRank()).getRankValue()){
+                        if (((Rank)shortListCards.get(i).getRank()).getRankValue() != ((Rank) diamondsPlayed.get(j).get().getRank()).getRankValue()){
                             availableCards.add(shortListCards.get(i));
                         }
                     }
@@ -98,7 +98,7 @@ public class SmartAI {
 
     Optional<Card> findAttackCard(int rankDifference, List<Card> hand){
         for(int i = 0; i < hand.size();i++){
-            if(((GameOfThrones.Rank) hand.get(i).getRank()).getRankValue() > rankDifference && (hand.get(i).getSuit() == Suit.CLUBS)){
+            if(((Rank) hand.get(i).getRank()).getRankValue() > rankDifference && (hand.get(i).getSuit() == Suit.CLUBS)){
                 return Optional.ofNullable(hand.get(i));
             }
             else{
@@ -110,7 +110,7 @@ public class SmartAI {
 
     Optional<Card> findDefenceCard(int rankDifference, List<Card> hand){
         for(int i = 0; i < hand.size();i++){
-            if((((GameOfThrones.Rank) hand.get(i).getRank()).getRankValue() > rankDifference) && (hand.get(i).getSuit() == Suit.SPADES)){
+            if((((Rank) hand.get(i).getRank()).getRankValue() > rankDifference) && (hand.get(i).getSuit() == Suit.SPADES)){
                 return Optional.ofNullable(hand.get(i));
             }
             else{
@@ -125,10 +125,10 @@ public class SmartAI {
             if((hand.get(i).getSuit()) == Suit.DIAMONDS){
                 Card lastCard = oppoPile.getCard(oppoPile.getNumberOfCards());
                 Suit lastSuit = (Suit) lastCard.getSuit();
-                int lastRank = ((GameOfThrones.Rank) lastCard.getRank()).getRankValue();
+                int lastRank = ((Rank) lastCard.getRank()).getRankValue();
                 int[] teamPileRanks = calculatePileRanks(teamPile);
                 int[] oppoPileRanks = calculatePileRanks(oppoPile);
-                int curRankValue = ((GameOfThrones.Rank) hand.get(i).getRank()).getRankValue();
+                int curRankValue = ((Rank) hand.get(i).getRank()).getRankValue();
                 if(oppoPileRanks[ATTACK_RANK_INDEX] > teamPileRanks[DEFENCE_RANK_INDEX] && lastSuit == Suit.CLUBS) {
                     if((lastRank != curRankValue) && ((oppoPileRanks[ATTACK_RANK_INDEX] - curRankValue) < teamPileRanks[DEFENCE_RANK_INDEX])){
                         returnedCard = Optional.ofNullable(hand.get(i));
@@ -157,14 +157,14 @@ public class SmartAI {
 
     private int[] calculatePileRanks(Hand pile) {
         Hand currentPile = pile;
-        int i = currentPile.isEmpty() ? 0 : ((GameOfThrones.Rank) currentPile.get(0).getRank()).getRankValue();
+        int i = currentPile.isEmpty() ? 0 : ((Rank) currentPile.get(0).getRank()).getRankValue();
         return new int[] { i, i };
     }
 
     private int getDiamondsNum(List<Card> hand){
         int numDiamonds = 0;
         for(int i = 0; i < hand.size();i++){
-            if(((GameOfThrones.Suit)hand.get(i).getSuit()).isMagic()){
+            if(((Suit)hand.get(i).getSuit()).isMagic()){
                 numDiamonds ++;
             }
         }
@@ -176,15 +176,15 @@ public class SmartAI {
         List<Card> cardsCanPlay = new ArrayList<>();
         if(cardsInHand.isEmpty() == false){
             for(int i = 0; i< cardsInHand.size();i++){
-                if(((GameOfThrones.Suit)cardsInHand.get(i).getSuit()).isMagic()){
+                if(((Suit)cardsInHand.get(i).getSuit()).isMagic()){
                     diamondsInHand.add(cardsInHand.get(i));
                 }
             }
             for(int i = 0; i< cardsInHand.size();i++){
-                if(((GameOfThrones.Suit)cardsInHand.get(i).getSuit()).isMagic() == false && ((GameOfThrones.Suit)cardsInHand.get(i).getSuit()).isCharacter() == false){
+                if(((Suit)cardsInHand.get(i).getSuit()).isMagic() == false && ((Suit)cardsInHand.get(i).getSuit()).isCharacter() == false){
                     if(diamondsInHand != null){
                         for(int j = 0; j < diamondsInHand.size();j++){
-                            if(((GameOfThrones.Rank)cardsInHand.get(i).getRank()).getRankValue() == ((GameOfThrones.Rank) diamondsInHand.get(j).getRank()).getRankValue()){
+                            if(((Rank)cardsInHand.get(i).getRank()).getRankValue() == ((Rank) diamondsInHand.get(j).getRank()).getRankValue()){
                                 cardsCanPlay.add(cardsInHand.get(i));
                             }
                         }

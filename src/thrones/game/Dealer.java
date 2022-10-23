@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.*;
 
 public class Dealer {
-    public static Card randomCard(Hand hand) {
+    public Card randomCard(Hand hand) {
         assert !hand.isEmpty() : " random card from empty hand.";
         int x = random.nextInt(hand.getNumberOfCards());
         return hand.get(x);
@@ -15,15 +15,18 @@ public class Dealer {
     static Random random;
     public void dealingOut(Deck deck,Hand[] hands, int nbPlayers, int nbCardsPerPlayer, int seed) {
         random = new Random(seed);
+        System.out.println(seed);
         Hand pack = deck.toHand(false);
+        //System.out.println(pack.getCardsWithRank(GameOfThrones.Rank.ACE));
         assert pack.getNumberOfCards() == 52 : " Starting pack is not 52 cards.";
         // Remove 4 Aces
         List<Card> aceCards = pack.getCardsWithRank(Rank.ACE);
+        System.out.println(aceCards);
         for (Card card : aceCards) {
-            System.out.println(card);
+            //System.out.println(card);
             card.removeFromHand(false);
         }
-        System.out.println(pack);
+        //System.out.println(pack);
         assert pack.getNumberOfCards() == 48 : " Pack without aces is not 48 cards.";
         // Give each player 3 heart cards
         for (int i = 0; i < nbPlayers; i++) {

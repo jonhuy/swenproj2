@@ -24,7 +24,7 @@ public class Player {
         List<Card> shortListCards = new ArrayList<>();
         for (int i = 0; i < currentHand.getCardList().size(); i++) {
             Card card = currentHand.getCardList().get(i);
-            GameOfThrones.Suit suit = (GameOfThrones.Suit) card.getSuit();
+            Suit suit = (Suit) card.getSuit();
             if (suit.isCharacter() == isCharacter) {
                 //System.out.println("card added");
                 shortListCards.add(card);
@@ -61,7 +61,7 @@ public class Player {
 
     public int selectPile(int playerIndex,Optional<Card> card,String playerType){
         int pileNum;
-        if(((GameOfThrones.Suit) card.get().getSuit()).isCharacter()){
+        if(((Suit) card.get().getSuit()).isCharacter()){
             pileNum = playerIndex % 2;
         }
         else{

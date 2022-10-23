@@ -17,102 +17,10 @@ public class GameOfThrones extends CardGame {
 
     enum GoTSuit { CHARACTER, DEFENCE, ATTACK, MAGIC }
 
-    public enum Suit {
-        SPADES(GameOfThrones.GoTSuit.DEFENCE),
-        HEARTS(GameOfThrones.GoTSuit.CHARACTER),
-        DIAMONDS(GameOfThrones.GoTSuit.MAGIC),
-        CLUBS(GameOfThrones.GoTSuit.ATTACK);
-        Suit(GameOfThrones.GoTSuit gotsuit) {
-            this.gotsuit = gotsuit;
-        }
-        private final GameOfThrones.GoTSuit gotsuit;
-
-        public boolean isDefence(){ return gotsuit == GameOfThrones.GoTSuit.DEFENCE; }
-
-        public boolean isAttack(){ return gotsuit == GameOfThrones.GoTSuit.ATTACK; }
-
-        public boolean isCharacter(){ return gotsuit == GameOfThrones.GoTSuit.CHARACTER; }
-
-        public boolean isMagic(){ return gotsuit == GameOfThrones.GoTSuit.MAGIC; }
-    }
-
-    public enum Rank {
-        // Reverse order of rank importance (see rankGreater() below)
-        // Order of cards is tied to card images
-        ACE(1), KING(10), QUEEN(10), JACK(10), TEN(10), NINE(9), EIGHT(8), SEVEN(7), SIX(6), FIVE(5), FOUR(4), THREE(3), TWO(2);
-        Rank(int rankValue) {
-            this.rankValue = rankValue;
-        }
-        private final int rankValue;
-        public int getRankValue() {
-            return rankValue;
-        }
-    }
-
-    /*
-    Canonical String representations of Suit, Rank, Card, and Hand
-    */
-    String canonical(Suit s) { return s.toString().substring(0, 1); }
-
-    String canonical(Rank r) {
-        switch (r) {
-            case ACE: case KING: case QUEEN: case JACK: case TEN:
-                return r.toString().substring(0, 1);
-            default:
-                return String.valueOf(r.getRankValue());
-        }
-    }
-
-    String canonical(Card c) { return canonical((Rank) c.getRank()) + canonical((Suit) c.getSuit()); }
-
-    String canonical(Hand h) {
-        return "[" + h.getCardList().stream().map(this::canonical).collect(Collectors.joining(",")) + "]";
-    }
+    //new class for string representation for the cards
+    private ConvertToString cardToString = new ConvertToString();
     static public int seed;
     static Random random;
-
-    // return random Card from Hand
-    public static Card randomCard(Hand hand) {
-        assert !hand.isEmpty() : " random card from empty hand.";
-        int x = random.nextInt(hand.getNumberOfCards());
-        return hand.get(x);
-    }
-
-    private void dealingOut(Hand[] hands, int nbPlayers, int nbCardsPerPlayer) {
-        Hand pack = deck.toHand(false);
-        assert pack.getNumberOfCards() == 52 : " Starting pack is not 52 cards.";
-        // Remove 4 Aces
-        List<Card> aceCards = pack.getCardsWithRank(Rank.ACE);
-        for (Card card : aceCards) {
-            card.removeFromHand(false);
-        }
-        System.out.println(pack);
-        assert pack.getNumberOfCards() == 48 : " Pack without aces is not 48 cards.";
-        // Give each player 3 heart cards
-        for (int i = 0; i < nbPlayers; i++) {
-            for (int j = 0; j < 3; j++) {
-                List<Card> heartCards = pack.getCardsWithSuit(Suit.HEARTS);
-                int x = random.nextInt(heartCards.size());
-                Card randomCard = heartCards.get(x);
-                randomCard.removeFromHand(false);
-                hands[i].insert(randomCard, false);
-            }
-        }
-        assert pack.getNumberOfCards() == 36 : " Pack without aces and hearts is not 36 cards.";
-        // Give each player 9 of the remaining cards
-        for (int i = 0; i < nbCardsPerPlayer; i++) {
-            for (int j = 0; j < nbPlayers; j++) {
-                assert !pack.isEmpty() : " Pack has prematurely run out of cards.";
-                Card dealt = randomCard(pack);
-                dealt.removeFromHand(false);
-                hands[j].insert(dealt, false);
-            }
-        }
-        for (int j = 0; j < nbPlayers; j++) {
-            assert hands[j].getNumberOfCards() == 12 : " Hand does not have twelve cards.";
-        }
-    }
-
     private final String version = "1.0";
     public final int nbPlayers = 4;
     public final int nbStartCards = 9;
@@ -203,20 +111,19 @@ public class GameOfThrones extends CardGame {
         for (int i = 0; i < nbPlayers; i++) {
             hands[i] = new Hand(deck);
         }
-        dealingOut( hands, nbPlayers, nbStartCards);
-        //dealer.dealingOut(deck, hands, nbPlayers, nbStartCards,seed);
+        //dealingOut( hands, nbPlayers, nbStartCards);
+        dealer.dealingOut(deck, hands, nbPlayers, nbStartCards,seed);
+
 
         for (int i = 0; i < nbPlayers; i++) {
             hands[i].sort(Hand.SortType.SUITPRIORITY, true);
-            System.out.println("hands[" + i + "]: " + canonical(hands[i]));
+            System.out.println("hands[" + i + "]: " + cardToString.ToString(hands[i]));
         }
 
         for (final Hand currentHand : hands) {
             // Set up human player for interaction
             currentHand.addCardListener(new CardAdapter() {
                 public void leftDoubleClicked(Card card) {
-                    System.out.println("this card was picked");
-                    System.out.println(card);
                     selected = Optional.of(card);
                     currentHand.setTouchEnabled(false);
                 }
@@ -259,12 +166,6 @@ public class GameOfThrones extends CardGame {
         }
 
         updatePileRanks();
-    }
-
-
-
-    private void selectRandomPile() {
-        selectedPileIndex = random.nextInt(2);
     }
 
     private void waitForCorrectSuit(int playerIndex, boolean isCharacter) {
@@ -322,7 +223,7 @@ public class GameOfThrones extends CardGame {
             for (; i < currentPile.getNumberOfCards(); i++) {
                 Card previous = currentPile.get(i-1);
                 Card card =  currentPile.get(i);
-                GameOfThrones.Suit suit = (GameOfThrones.Suit) card.getSuit();
+                Suit suit = (Suit) card.getSuit();
                 if (suit.isDefence()) {
                     if(card.getRank() == previous.getRank()){
                         defencePower += 2*(((Rank) currentPile.get(i).getRank()).getRankValue());
@@ -357,7 +258,7 @@ public class GameOfThrones extends CardGame {
         return new int[] { attackPower, defencePower };
     }
 
-    private void updatePileRankState(int pileIndex, int attackRank, int defenceRank) {
+    protected void updatePileRankState(int pileIndex, int attackRank, int defenceRank) {
         TextActor currentPile = (TextActor) pileTextActors[pileIndex];
         removeActor(currentPile);
         String text = playerTeams[pileIndex] + " Attack: " + attackRank + " - Defence: " + defenceRank;
@@ -433,7 +334,7 @@ public class GameOfThrones extends CardGame {
             // Pick pile for selected card
             if (selected.isPresent()){
                 if (!wantCharacterCard){
-                    setStatusText("Selected: " + canonical(selected.get()) + ". Player" + nextPlayer + " select a pile to play the card.");
+                    setStatusText("Selected: " + cardToString.ToString(selected.get()) + ". Player" + nextPlayer + " select a pile to play the card.");
                     //boolean validPile = false;
                     boolean isSelectedMagic = ((Suit) selected.get().getSuit()).isMagic();
                     //int pileTries = 0;
@@ -455,7 +356,7 @@ public class GameOfThrones extends CardGame {
                     if (((Suit) selected.get().getSuit()).isMagic()){
                         playedDiamonds.add(selected);
                     }
-                    System.out.println("Player " + nextPlayer + " plays " + canonical(selected.get()) + " on pile " + pileIndex);
+                    System.out.println("Player " + nextPlayer + " plays " + cardToString.ToString(selected.get()) + " on pile " + pileIndex);
                     selected.get().setVerso(false);
                     selected.get().transfer(piles[pileIndex], true); // transfer to pile (includes graphic effect)
                     updatePileRanks();
@@ -476,6 +377,7 @@ public class GameOfThrones extends CardGame {
         updatePileRanks();
         int[][] pileRanks = new int[PILES_SIZE + 1][3];
         for (int j=0;j<PILES_SIZE;j++){
+            calculatePileRanks(j);
             pileRanks[j] = printRanks(piles[j], j);
         }
 
@@ -516,7 +418,7 @@ public class GameOfThrones extends CardGame {
     }
 
     public int[] printRanks(Hand pile, int i){
-        System.out.println("piles["+ i + "]: " + canonical(pile));
+        System.out.println("piles["+ i + "]: " + cardToString.ToString(pile));
         int[] pileRanks = calculatePileRanks(i);
         System.out.println("piles["+ i + "] is " + "Attack: " + pileRanks[ATTACK_RANK_INDEX] + " - Defence: " + pileRanks[DEFENCE_RANK_INDEX]);
         return pileRanks;
@@ -596,7 +498,7 @@ public class GameOfThrones extends CardGame {
         } else {
             properties = PropertiesLoader.loadPropertiesFile(args[0]);
         }
-        System.out.println(properties);
+        //System.out.println(properties);
         String seedProp = properties.getProperty("seed");  //Seed property
         if (seedProp != null) { // Use property seed
             GameOfThrones.seed = Integer.parseInt(seedProp);
